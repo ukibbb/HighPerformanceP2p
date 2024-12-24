@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github/ukibbb/tcp-server/transport"
 	"log"
 	"net"
 	"testing"
@@ -75,9 +76,11 @@ func TestListenerStart(t *testing.T) {
 func TestListenerAcceptAndHandle(t *testing.T) {
 	mockListener := NewMockListener().(*MockNetListener)
 	listener := Listener{
-		host:     "localhost",
-		port:     "6379",
-		protocol: "tcp",
+		Transport: &transport.Transport{
+			Host:     "localhost",
+			Port:     "6379",
+			Protocol: "tcp",
+		},
 		listener: mockListener,
 	}
 

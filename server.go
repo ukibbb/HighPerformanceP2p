@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github/ukibbb/tcp-server/transport"
 	"log"
 	"net"
 	"os"
@@ -12,7 +13,7 @@ var _ = net.Listen
 var _ = os.Exit
 
 type Listener struct {
-	*Transport
+	*transport.Transport
 	listener net.Listener
 }
 
@@ -80,7 +81,7 @@ func (s *Listener) Handle(connection *net.Conn) {
 }
 
 func main() {
-	server := Listener{Transport: &Transport{
+	server := Listener{Transport: &transport.Transport{
 		Host:     "0.0.0.0",
 		Port:     "6379",
 		Protocol: "tcp",
