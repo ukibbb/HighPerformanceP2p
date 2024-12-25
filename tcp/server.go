@@ -1,23 +1,31 @@
-package main
+package tcp
 
 import (
 	"fmt"
-	"github/ukibbb/tcp-server/transport"
 	"log"
 	"net"
-	"os"
 	"time"
 )
 
-var _ = net.Listen
-var _ = os.Exit
-
-type Listener struct {
-	*transport.Transport
-	listener net.Listener
+type TCPListenerOpts struct {
+	listenAddr string
 }
 
-func (s *Listener) Start() error {
+type TCPListener struct {
+	TCPListenerOpts
+	listener net.Listener
+
+	// peers map[net.Addr]Peer
+}
+
+// TCP server contructor
+func NewTCPListener(opts TCPListenerOpts) *TCPListener {
+	return &TCPListener{
+		TCPListenerOpts: opts,
+	}
+}
+
+func (s *TCPListener) ListenAndAccept() error {
 	if s.listener != nil {
 		log.Printf(
 			"[INFO]: Listener already provided %v created in memory address %v",
@@ -26,13 +34,12 @@ func (s *Listener) Start() error {
 		)
 		return nil
 	}
-	l, err := net.Listen(s.GetProtocol(), s.GetAddress())
+	l, err := net.Listen("tcp", s.listenAddr)
 
 	if err != nil {
 		return fmt.Errorf(
-			"[ERROR]: Failed to bind to %s:%s, error: %v",
-			s.Transport.Host,
-			s.Transport.Port,
+			"[ERROR]: Failed to bind to %s, error: %v",
+			s.listener.Addr(),
 			err,
 		)
 	}
@@ -45,9 +52,8 @@ func (s *Listener) Start() error {
 		&s.listener,
 	)
 	log.Printf(
-		"[INFO]: Server is running on host `%s` port `%s`",
-		s.Transport.Host,
-		s.Transport.Port,
+		"[INFO]: Server is running on `%s`",
+		s.listener.Addr(),
 	)
 
 	go s.AcceptAndHandle()
@@ -55,7 +61,7 @@ func (s *Listener) Start() error {
 	return nil
 }
 
-func (s *Listener) AcceptAndHandle() error {
+func (s *TCPListener) AcceptAndHandle() error {
 	log.Printf(
 		"[INFO]: Listener.AcceptAndHandle() %v created in memory address %v",
 		s.listener,
@@ -76,7 +82,7 @@ func (s *Listener) AcceptAndHandle() error {
 	}
 }
 
-func (s *Listener) Handle(connection net.Conn) {
+func (s *TCPListener) Handle(connection net.Conn) {
 	log.Printf(
 		"[INFO]: Handling connection `Handle()` %v\n",
 		connection,
@@ -88,16 +94,4 @@ func (s *Listener) Handle(connection net.Conn) {
 	}()
 	(connection).SetDeadline(time.Now().Add(time.Second * 3))
 
-}
-
-func main() {
-	server := Listener{Transport: &transport.Transport{
-		Host:     "0.0.0.0",
-		Port:     "6379",
-		Protocol: "tcp",
-	}}
-	if err := server.Start(); err != nil {
-		log.Fatal(err)
-	}
-	select {}
 }
