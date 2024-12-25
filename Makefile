@@ -11,7 +11,7 @@ test:
 docker_build:
 	docker build -t tcp-server .
 
-docker_run: docker_stop docker_build
+docker_run: docker_build
 	docker run --name tcp-server -p 6379:6379 tcp-server
 
 docker_stop:

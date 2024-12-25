@@ -27,6 +27,7 @@ func (s *Listener) Start() error {
 		return nil
 	}
 	l, err := net.Listen(s.GetProtocol(), s.GetAddress())
+
 	if err != nil {
 		return fmt.Errorf(
 			"[ERROR]: Failed to bind to %s:%s, error: %v",
@@ -35,7 +36,9 @@ func (s *Listener) Start() error {
 			err,
 		)
 	}
+
 	s.listener = l
+
 	log.Printf(
 		"[INFO]: Listener.Start() %v created in memory address %v",
 		s.listener,
@@ -46,6 +49,9 @@ func (s *Listener) Start() error {
 		s.Transport.Host,
 		s.Transport.Port,
 	)
+
+	go s.AcceptAndHandle()
+
 	return nil
 }
 
@@ -59,24 +65,28 @@ func (s *Listener) AcceptAndHandle() error {
 	for {
 		connection, err := s.listener.Accept()
 		log.Printf(
-			"[INFO]: Connection %v",
-			&connection,
+			"[INFO]: Connection `AcceptAndHandle()` %v",
+			connection,
 		)
 
 		if err != nil {
 
 		}
-		go s.Handle(&connection)
+		go s.Handle(connection)
 	}
 }
 
-func (s *Listener) Handle(connection *net.Conn) {
+func (s *Listener) Handle(connection net.Conn) {
 	log.Printf(
-		"[INFO]: Handling connection %v",
+		"[INFO]: Handling connection `Handle()` %v\n",
 		connection,
 	)
-	defer (*connection).Close()
-	(*connection).SetDeadline(time.Now().Add(time.Second * 3))
+	defer func() {
+		log.Printf("[INFO]: Dropping connection %v\n", connection)
+
+		defer (connection).Close()
+	}()
+	(connection).SetDeadline(time.Now().Add(time.Second * 3))
 
 }
 
@@ -86,10 +96,8 @@ func main() {
 		Port:     "6379",
 		Protocol: "tcp",
 	}}
-	err := server.Start()
-	if err != nil {
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
 	}
-	err = server.AcceptAndHandle()
-	if err != nil {
-	}
+	select {}
 }

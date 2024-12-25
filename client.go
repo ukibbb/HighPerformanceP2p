@@ -28,14 +28,15 @@ func (s *Sender) Send(data []byte) {
 	defer s.conn.Close()
 	s.conn.Write(data)
 }
-func main() {
-	sender := &Sender{
-		Transport: &transport.Transport{
-			Host:     "0.0.0.0",
-			Port:     "6379",
-			Protocol: "tcp",
-		},
-	}
-	sender.CreateConnection()
-	sender.Send([]byte("Hello World"))
-}
+
+// func main() {
+// 	sender := &Sender{
+// 		Transport: &transport.Transport{
+// 			Host:     "0.0.0.0",
+// 			Port:     "6379",
+// 			Protocol: "tcp",
+// 		},
+// 	}
+// 	sender.CreateConnection()
+// 	sender.Send([]byte("Hello World"))
+// }
