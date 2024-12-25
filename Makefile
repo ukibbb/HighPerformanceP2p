@@ -7,6 +7,8 @@ run: build
 test: 
 	@go test ./... --race -v
 
+bench_test:
+	@go test ./... -bench=.
 
 docker_build:
 	docker build -t tcp-server .

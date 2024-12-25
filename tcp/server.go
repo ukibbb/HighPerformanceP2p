@@ -8,7 +8,7 @@ import (
 )
 
 type TCPListenerOpts struct {
-	listenAddr string
+	ListenAddr string
 }
 
 type TCPListener struct {
@@ -34,7 +34,7 @@ func (s *TCPListener) ListenAndAccept() error {
 		)
 		return nil
 	}
-	l, err := net.Listen("tcp", s.listenAddr)
+	l, err := net.Listen("tcp", s.ListenAddr)
 
 	if err != nil {
 		return fmt.Errorf(
