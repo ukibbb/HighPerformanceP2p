@@ -2,7 +2,7 @@
 
 ## Overview
 
-Welcome to the **Super Duper High-Performance TCP Server**! This Go-based server is engineered for blazing-fast performance and scalability, making it ideal for demanding applications that require efficient handling of numerous concurrent TCP connections.
+Welcome to the **Super Duper High-Performance TCP Transport**! This Go-based transport is engineered for blazing-fast performance and scalability, making it ideal for demanding applications that require efficient handling of numerous concurrent TCP connections.
 
 ## Features
 
