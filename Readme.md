@@ -1,127 +1,121 @@
-# Super Duper High-Performance TCP Server
+# HighPerformanceP2P TCP Transport
 
 ## Overview
 
-Welcome to the **Super Duper High-Performance TCP Transport**! This Go-based transport is engineered for blazing-fast performance and scalability, making it ideal for demanding applications that require efficient handling of numerous concurrent TCP connections.
+HighPerformanceP2P is a high-performance, peer-to-peer (P2P) TCP transport library written in Go. It is designed for efficient and reliable communication between peers in a distributed network. The library is optimized for low latency, high throughput, and scalability, making it suitable for real-time applications, distributed systems, and decentralized networks.
 
 ## Features
 
-- **High Concurrency**: Leverages Go's lightweight goroutines for handling thousands of simultaneous connections.
-- **Optimized Performance**: Designed with high throughput and low latency in mind.
-- **Scalable**: Easily scales to handle increasing workloads.
-- **Customizable**: Modular architecture allows easy extension and configuration.
-- **Robust Error Handling**: Resilient to connection errors and supports graceful recovery.
+- **Efficient Connection Handling**: Supports multiplexed TCP connections with minimal overhead.
+- **Peer Discovery**: Includes mechanisms for discovering and managing peers in a dynamic network.
+- **Reliability**: Built-in support for retrying, error handling, and congestion control.
+- **Security**: Optional TLS encryption to secure communication.
+- **Custom Protocol Support**: Easy to integrate with custom application-layer protocols.
+- **Scalability**: Handles thousands of concurrent connections efficiently.
 
-## Requirements
+## Use Cases
 
-- Go version 1.18 or later
-- A modern OS (Linux, macOS, Windows, etc.)
+- Real-time messaging systems
+- Decentralized applications (DApps)
+- Distributed databases
+- Multiplayer games
+- IoT communication networks
 
 ## Installation
 
-1. Clone this repository:
+To install HighPerformanceP2P, use:
 
-   ```bash
-   git clone https://github.com/ukibbb/tcp-server.git
-   cd super-duper-tcp-server
-   ```
-
-2. Build the project:
-
-   ```bash
-   go build -o tcp-server
-   ```
-
-3. Run the server:
-
-   ```bash
-   ./tcp-server
-   ```
+```bash
+go get github.com/ukibbb/highperformancep2p
+```
 
 ## Usage
 
-### Configuration
+### Setting Up a Peer
 
-The server can be configured via a `config.json` file. Here's an example configuration:
+Here is a basic example of setting up a peer and connecting to another peer:
 
-```json
-{
-  "host": "127.0.0.1",
-  "port": 8080,
-  "max_connections": 10000,
-  "read_timeout": 30,
-  "write_timeout": 30
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"github.com/yourusername/highperformancep2p"
+)
+
+func main() {
+	// Initialize a new peer
+	peer := highperformancep2p.NewPeer("0.0.0.0:9000")
+
+	// Register a message handler
+	peer.OnMessage(func(msg p2p.Message) {
+		fmt.Printf("Received message: %s\n", string(msg.Data))
+	})
+
+	// Start the peer
+	if err := peer.Start(); err != nil {
+		log.Fatalf("Failed to start peer: %v", err)
+	}
+
+	// Connect to another peer
+	if err := peer.Connect("192.168.1.100:9001"); err != nil {
+		log.Fatalf("Failed to connect to peer: %v", err)
+	}
+
+	// Send a message to the connected peer
+	peer.Send(p2p.Message{
+		To:   "192.168.1.100:9001",
+		Data: []byte("Hello, Peer!"),
+	})
 }
 ```
 
-- **host**: The IP address to bind the server.
-- **port**: The port number for incoming connections.
-- **max_connections**: Maximum concurrent client connections.
-- **read_timeout**: Timeout for reading data from a client (in seconds).
-- **write_timeout**: Timeout for writing data to a client (in seconds).
+### Configuration
 
-### Running the Server
+You can configure the peer with custom options:
 
-Simply execute the server binary:
-
-```bash
-./tcp-server -config=config.json
+```go
+peer := p2p.NewPeer("0.0.0.0:9000", p2p.Options{
+	TLSConfig:    yourTLSConfig, // For secure communication
+	MaxRetries:   5,             // Retry count for failed connections
+	BufferSize:   1024 * 64,     // Buffer size for messages
+})
 ```
 
-### API
+## API Reference
 
-The TCP server uses a custom protocol for client-server communication. Details of the protocol can be found in the `PROTOCOL.md` file.
+### Peer Methods
 
-### Logging
+- `NewPeer(address string, options ...Options) *Peer`: Creates a new peer instance.
+- `Start() error`: Starts the peer, allowing it to accept connections.
+- `Connect(address string) error`: Connects to another peer.
+- `Send(msg Message) error`: Sends a message to a specific peer.
+- `OnMessage(handler func(msg Message))`: Registers a handler for incoming messages.
+- `Close() error`: Stops the peer and closes all connections.
 
-Server logs provide detailed information about connections, errors, and server events. Logs are written to `logs/server.log` by default.
+### Message Structure
 
-## Development
-
-1. Install dependencies:
-
-   ```bash
-   go mod tidy
-   ```
-
-2. Run the server in development mode:
-
-   ```bash
-   go run main.go
-   ```
-
-3. Test the server:
-
-   ```bash
-   go test ./...
-   ```
-
-## Performance Testing
-
-You can use tools like `wrk` or `Apache Benchmark` to stress test the server. Example:
-
-```bash
-wrk -t12 -c400 -d30s tcp://127.0.0.1:8080
+```go
+type Message struct {
+	To   string
+	Data []byte
+}
 ```
 
 ## Contributing
 
-We welcome contributions! Feel free to fork the repository and submit a pull request.
-
-### Guidelines
-
-- Ensure your code follows the Go community standards.
-- Write unit tests for new functionality.
-- Update documentation as needed.
+Contributions are welcome! Please fork the repository and submit a pull request with your changes. Make sure to include tests and documentation for any new features or bug fixes.
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+HighPerformanceP2P is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with Go's `net` package for efficient networking.
+- Inspired by existing P2P protocols like BitTorrent and libp2p.
 
 ## Contact
 
-For questions or support, reach out to \*\*\*\* or open an issue in the repository.
-
----
-
-**Happy Coding!** 🚀
+For questions, suggestion
