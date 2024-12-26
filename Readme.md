@@ -15,10 +15,8 @@ A simple and extensible implementation of a peer-to-peer (P2P) transport layer u
 To use this library in your Go project, install it via `go get`:
 
 ```bash
-go get github.com/yourusername/p2p
+go get github.com/ukibbb/p2p
 ```
-
-Replace `yourusername` with your GitHub username if hosted there.
 
 ## Usage
 
@@ -31,7 +29,8 @@ package main
 
 import (
     "log"
-    "github.com/yourusername/p2p"
+    "github.com/ukibbb/p2p"
+
 )
 
 func main() {
