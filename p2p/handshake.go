@@ -1,0 +1,1 @@
+type HandShakeFunc(Peer) error
