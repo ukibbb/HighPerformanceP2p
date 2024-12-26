@@ -35,7 +35,7 @@ bench_test:
 	@go test ./... -bench=.
 
 docker_build:
-	docker build -t p2pr .
+	docker build -t p2p .
 
 docker_run: docker_build
 	docker run --name p2p -p 6379:6379 p2p
