@@ -1,121 +1,147 @@
-# HighPerformanceP2P TCP Transport
+# Golang P2P Transport
 
-## Overview
-
-HighPerformanceP2P is a high-performance, peer-to-peer (P2P) TCP transport library written in Go. It is designed for efficient and reliable communication between peers in a distributed network. The library is optimized for low latency, high throughput, and scalability, making it suitable for real-time applications, distributed systems, and decentralized networks.
+A simple and extensible implementation of a peer-to-peer (P2P) transport layer using TCP in Go. This library provides core features for managing connections, sending and receiving data, and implementing custom handshake protocols.
 
 ## Features
 
-- **Efficient Connection Handling**: Supports multiplexed TCP connections with minimal overhead.
-- **Peer Discovery**: Includes mechanisms for discovering and managing peers in a dynamic network.
-- **Reliability**: Built-in support for retrying, error handling, and congestion control.
-- **Security**: Optional TLS encryption to secure communication.
-- **Custom Protocol Support**: Easy to integrate with custom application-layer protocols.
-- **Scalability**: Handles thousands of concurrent connections efficiently.
-
-## Use Cases
-
-- Real-time messaging systems
-- Decentralized applications (DApps)
-- Distributed databases
-- Multiplayer games
-- IoT communication networks
+- TCP-based P2P transport
+- Simple interface for handling connections
+- Customizable handshake functionality
+- Efficient message decoding using pluggable decoders
+- Concurrency-safe design with `sync.WaitGroup`
 
 ## Installation
 
-To install HighPerformanceP2P, use:
+To use this library in your Go project, install it via `go get`:
 
 ```bash
-go get github.com/ukibbb/highperformancep2p
+go get github.com/yourusername/p2p
 ```
+
+Replace `yourusername` with your GitHub username if hosted there.
 
 ## Usage
 
-### Setting Up a Peer
+### Create a TCP Transport
 
-Here is a basic example of setting up a peer and connecting to another peer:
+You can create a TCP transport using the `NewTCPTransport` constructor. Pass in options to configure the listening address, handshake function, decoder, and peer connection handler.
 
 ```go
 package main
 
 import (
-	"fmt"
-	"log"
-	"github.com/yourusername/highperformancep2p"
+    "log"
+    "github.com/yourusername/p2p"
 )
 
 func main() {
-	// Initialize a new peer
-	peer := highperformancep2p.NewPeer("0.0.0.0:9000")
+    opts := p2p.TCPTransportOpts{
+        ListenAddr: ":8080",
+        HandshakeFunc: func(peer p2p.Peer) error {
+            log.Printf("New peer connected: %s", peer.Conn.RemoteAddr())
+            return nil
+        },
+        Decoder: myCustomDecoder{}, // Implement the `Decoder` interface
+        OnPeer: func(peer p2p.Peer) error {
+            log.Printf("Peer ready: %s", peer.Conn.RemoteAddr())
+            return nil
+        },
+    }
 
-	// Register a message handler
-	peer.OnMessage(func(msg p2p.Message) {
-		fmt.Printf("Received message: %s\n", string(msg.Data))
-	})
+    transport := p2p.NewTCPTransport(opts)
 
-	// Start the peer
-	if err := peer.Start(); err != nil {
-		log.Fatalf("Failed to start peer: %v", err)
-	}
-
-	// Connect to another peer
-	if err := peer.Connect("192.168.1.100:9001"); err != nil {
-		log.Fatalf("Failed to connect to peer: %v", err)
-	}
-
-	// Send a message to the connected peer
-	peer.Send(p2p.Message{
-		To:   "192.168.1.100:9001",
-		Data: []byte("Hello, Peer!"),
-	})
+    if err := transport.ListenAndAccept(); err != nil {
+        log.Fatalf("Failed to start transport: %v", err)
+    }
 }
 ```
 
-### Configuration
+### Sending Data
 
-You can configure the peer with custom options:
+To send data to a peer, use the `Send` method of the `TCPPeer` struct:
 
 ```go
-peer := p2p.NewPeer("0.0.0.0:9000", p2p.Options{
-	TLSConfig:    yourTLSConfig, // For secure communication
-	MaxRetries:   5,             // Retry count for failed connections
-	BufferSize:   1024 * 64,     // Buffer size for messages
-})
+peer.Send([]byte("Hello, Peer!"))
 ```
 
-## API Reference
+### Receiving Data
 
-### Peer Methods
-
-- `NewPeer(address string, options ...Options) *Peer`: Creates a new peer instance.
-- `Start() error`: Starts the peer, allowing it to accept connections.
-- `Connect(address string) error`: Connects to another peer.
-- `Send(msg Message) error`: Sends a message to a specific peer.
-- `OnMessage(handler func(msg Message))`: Registers a handler for incoming messages.
-- `Close() error`: Stops the peer and closes all connections.
-
-### Message Structure
+Consume incoming RPC messages from the transport's `Consume` method:
 
 ```go
-type Message struct {
-	To   string
-	Data []byte
+for rpc := range transport.Consume() {
+    log.Printf("Received message: %+v from %s", rpc.Data, rpc.From)
 }
 ```
 
-## Contributing
+## Interfaces
 
-Contributions are welcome! Please fork the repository and submit a pull request with your changes. Make sure to include tests and documentation for any new features or bug fixes.
+### `Peer`
+
+Represents a connected peer. The `TCPPeer` struct implements this interface.
+
+```go
+type Peer interface {
+    Send(data []byte) error
+    Conn() net.Conn
+}
+```
+
+### `Decoder`
+
+Defines the interface for decoding incoming messages.
+
+```go
+type Decoder interface {
+    Decode(conn net.Conn, out *RPC) error
+}
+```
+
+## Example
+
+Here’s a complete example of creating a TCP transport and handling peer connections:
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/yourusername/p2p"
+)
+
+func main() {
+    opts := p2p.TCPTransportOpts{
+        ListenAddr: ":9000",
+        HandshakeFunc: func(peer p2p.Peer) error {
+            log.Printf("Handshake complete with peer: %s", peer.Conn().RemoteAddr())
+            return nil
+        },
+        Decoder: MyDecoder{},
+        OnPeer: func(peer p2p.Peer) error {
+            log.Printf("Peer connected: %s", peer.Conn().RemoteAddr())
+            return nil
+        },
+    }
+
+    transport := p2p.NewTCPTransport(opts)
+
+    if err := transport.ListenAndAccept(); err != nil {
+        log.Fatalf("Error starting transport: %v", err)
+    }
+
+    for rpc := range transport.Consume() {
+        log.Printf("Message received: %s", string(rpc.Data))
+    }
+}
+
+// MyDecoder implements the Decoder interface
+struct MyDecoder {}
+
+func (d MyDecoder) Decode(conn net.Conn, out *p2p.RPC) error {
+    // Implement your decoding logic here
+}
+```
 
 ## License
 
-HighPerformanceP2P is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Built with Go's `net` package for efficient networking.
-- Inspired by existing P2P protocols like BitTorrent and libp2p.
-
-## Contact
-
-For questions, suggestion
+This project is licensed under the MIT License. See the LICENSE file for details.

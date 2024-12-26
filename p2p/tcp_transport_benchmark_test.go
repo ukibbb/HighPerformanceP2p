@@ -1,4 +1,4 @@
-package tcp
+package p2p
 
 import "testing"
 

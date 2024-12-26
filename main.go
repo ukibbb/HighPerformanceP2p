@@ -1,19 +1,18 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/ukibbb/tcp-server/tcp"
+	"github.com/ukibbb/HighPerformanceP2p/p2p"
 )
 
 func main() {
-	opts := tcp.TCPListenerOpts{
-		ListenAddr: ":6379",
+	fmt.Print("Main function\n")
+	opts := p2p.TCPTransportOpts{
+		ListenAddr:    ":6379",
+		HandshakeFunc: p2p.NOPHandshakeFunc,
 	}
-	server := tcp.NewTCPListener(opts)
+	p2p.NewTCPTransport(opts)
 
-	if err := server.ListenAndAccept(); err != nil {
-		log.Fatal(err)
-	}
 	select {}
 }
