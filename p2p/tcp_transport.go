@@ -21,6 +21,18 @@ type TCPPeer struct {
 	wg *sync.WaitGroup
 }
 
+type RPCErr struct {
+	net.Conn
+	err error
+}
+
+func NewRPCErr(conn net.Conn, err error) *RPCErr {
+	return &RPCErr{
+		Conn: conn,
+		err:  err,
+	}
+}
+
 func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer {
 	return &TCPPeer{
 		Conn:     conn,
@@ -50,7 +62,7 @@ type TCPTransport struct {
 	TCPTransportOpts
 	listener  net.Listener
 	rpcch     chan RPC
-	connerrch chan error
+	connerrch chan *RPCErr
 }
 
 // TCP server contructor
@@ -58,7 +70,7 @@ func NewTCPTransport(opts TCPTransportOpts) *TCPTransport {
 	return &TCPTransport{
 		TCPTransportOpts: opts,
 		rpcch:            make(chan RPC, 1024),
-		connerrch:        make(chan error),
+		connerrch:        make(chan *RPCErr),
 	}
 }
 
@@ -74,7 +86,7 @@ func (t *TCPTransport) Consume() <-chan RPC {
 	return t.rpcch
 }
 
-func (t *TCPTransport) ConsumeError() <-chan error {
+func (t *TCPTransport) ConsumeError() <-chan RPCErr {
 	return t.connerrch
 }
 
@@ -129,7 +141,7 @@ func (t *TCPTransport) startAcceptLoop() {
 		go func() {
 			err = t.handleConn(conn, false)
 			if err != nil {
-				t.connerrch <- err
+				t.connerrch <- NewRPCErr(conn, err)
 			}
 		}()
 
