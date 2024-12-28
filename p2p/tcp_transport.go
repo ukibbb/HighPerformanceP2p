@@ -74,6 +74,10 @@ func (t *TCPTransport) Consume() <-chan RPC {
 	return t.rpcch
 }
 
+func (t *TCPTransport) ConsumeError() <-chan error {
+	return t.connerrch
+}
+
 // Close implements the Transport interface.
 func (t *TCPTransport) Close() error {
 	return t.listener.Close()
