@@ -17,5 +17,5 @@ type Transport interface {
 	ListenAndAccept() error
 	Close() error
 	Consume() <-chan RPC
-	ConsumeError() <-chan RPCErr
+	ConsumeError() <-chan *RPCErr
 }

@@ -86,7 +86,7 @@ func (t *TCPTransport) Consume() <-chan RPC {
 	return t.rpcch
 }
 
-func (t *TCPTransport) ConsumeError() <-chan RPCErr {
+func (t *TCPTransport) ConsumeError() <-chan *RPCErr {
 	return t.connerrch
 }
 
