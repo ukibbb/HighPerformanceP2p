@@ -48,8 +48,9 @@ type TCPTransportOpts struct {
 // TCPTransport will implement Transport interface
 type TCPTransport struct {
 	TCPTransportOpts
-	listener net.Listener
-	rpcch    chan RPC
+	listener  net.Listener
+	rpcch     chan RPC
+	connerrch chan error
 }
 
 // TCP server contructor
@@ -120,12 +121,17 @@ func (t *TCPTransport) startAcceptLoop() {
 		if err != nil {
 			log.Printf("[WARNING]: Failed to accept connection `startAcceptLoop()` %s\n", err)
 		}
-		go t.handleConn(conn, false)
+		go func() {
+			err = t.handleConn(conn, false)
+			if err != nil {
+				t.connerrch <- err
+			}
+		}()
 
 	}
 }
 
-func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
+func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) error {
 	var err error
 
 	defer func() {
@@ -136,12 +142,12 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 	peer := NewTCPPeer(conn, outbound)
 
 	if err = t.HandshakeFunc(peer); err != nil {
-		return
+		return err
 	}
 
 	if t.OnPeer != nil {
 		if err = t.OnPeer(peer); err != nil {
-			return
+			return err
 		}
 	}
 
@@ -150,9 +156,10 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 		rpc := RPC{}
 		err = t.Decoder.Decode(conn, &rpc)
 		if err != nil {
-			return
+			return err
 		}
 		rpc.From = conn.RemoteAddr().String()
+
 		if rpc.Stream {
 			peer.wg.Add(1)
 			fmt.Printf("[%s] incoming stream, waiting...\n", conn.RemoteAddr())
@@ -162,5 +169,4 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 		}
 		t.rpcch <- rpc
 	}
-
 }
