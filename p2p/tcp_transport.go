@@ -58,6 +58,7 @@ func NewTCPTransport(opts TCPTransportOpts) *TCPTransport {
 	return &TCPTransport{
 		TCPTransportOpts: opts,
 		rpcch:            make(chan RPC, 1024),
+		connerrch:        make(chan error),
 	}
 }
 
