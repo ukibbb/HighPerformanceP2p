@@ -151,11 +151,6 @@ func (t *TCPTransport) startAcceptLoop() {
 func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) error {
 	var err error
 
-	defer func() {
-		log.Printf("Dropping peer connection %v\n", conn)
-		conn.Close()
-	}()
-
 	peer := NewTCPPeer(conn, outbound)
 
 	if err = t.HandshakeFunc(peer); err != nil {
