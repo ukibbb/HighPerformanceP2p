@@ -15,7 +15,7 @@ A simple and extensible implementation of a peer-to-peer (P2P) transport layer u
 To use this library in your Go project, install it via `go get`:
 
 ```bash
-go get github.com/ukibbb/p2p
+go get github.com/ukibbb/HighPerformanceP2p
 ```
 
 ## Usage
