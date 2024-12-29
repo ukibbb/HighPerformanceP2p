@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ukibbb/HighPerformanceP2p/p2p"
+	"github.com/ukibbb/HighPerformanceP2p/v2/p2p"
 )
 
 func main() {
