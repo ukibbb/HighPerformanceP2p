@@ -1,4 +1,4 @@
-module github.com/ukibbb/HighPerformanceP2p
+module github.com/ukibbb/HighPerformanceP2p/v2
 
 go 1.22.2
 
